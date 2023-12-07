@@ -1,45 +1,38 @@
 import os
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
+from webdriver_manager.chrome import ChromeDriverManager
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 import re
 
-
-
-
 # define the class for inspection of the input folder and generation of files list.
 #==============================================================================
 #==============================================================================
 #==============================================================================
-class WebDriverToolkit:
+class WebDriverToolkit:    
     
-    """
-    Initializes a webdriver instance with Chrome options set to disable images loading.
-    
-    Keyword arguments:
-    
-    wd_path (str): The file path to the Chrome webdriver executable
-    
-    Returns:
-        
-    None 
-    
-    """
-    def __init__(self, path):
-        self.path = os.path.join(path, 'chromedriver.exe')       
+    def __init__(self, driver_path, download_path, headless=True):
+        self.driver_path = os.path.join(driver_path, 'chromedriver.exe') 
+        self.download_path = download_path      
         self.option = webdriver.ChromeOptions()
-        self.service = Service(executable_path=self.path)
-        self.chrome_prefs = {}
+        if headless==True:
+            self.option.add_argument('--headless')
+        self.service = Service(executable_path=self.driver_path)
+        self.chrome_prefs = {'download.default_directory' : download_path}
         self.option.experimental_options['prefs'] = self.chrome_prefs
         self.chrome_prefs['profile.default_content_settings'] = {'images': 2}
-        self.chrome_prefs['profile.managed_default_content_settings'] = {'images': 2} 
+        self.chrome_prefs['profile.managed_default_content_settings'] = {'images': 2}
 
-    def initialize_webdriver(self):
-        driver = webdriver.Chrome(service=self.service, options=self.option) 
+    def initialize_webdriver(self):       
+        self.path = ChromeDriverManager().install()
+        self.service = Service(executable_path=self.path)
+        driver = webdriver.Chrome(service=self.service, options=self.option)
+        print('The latest ChromeDriver version is now installed in the .wdm folder in user/home')                  
         
-        return driver    
+        return driver 
+   
         
     
 # define the class for inspection of the input folder and generation of files list
@@ -97,7 +90,6 @@ class DrugComScraper:
         self.drugs_interactions['food interactions'].append(re.findall(r'\((.*?)\)', food_interactions)[0])                
         num_drug2drug_interactions = int(re.findall(r'\((.*?)\)', major_interactions)[0]) + int(re.findall(r'\((.*?)\)', moderate_interactions)[0]) + int(re.findall(r'\((.*?)\)', minor_interactions)[0])
         num_drug2food_interactions = int(re.findall(r'\((.*?)\)', food_interactions)[0])
-
         drug2drug_descriptions = []
         drug2food_descriptions = []
         if num_drug2drug_interactions > 0:
@@ -140,14 +132,10 @@ class DrugComScraper:
                         print(f'Drug {K} not found! Skipping this item')
                 research_button = wait.until(EC.visibility_of_element_located((By.XPATH, '//*[@id="interaction_list"]/div/a[1]')))    
                 research_button.click()           
-                drugs_interactions = self.extract_data(10, pair[0], pair[1])                   
-
+                drugs_interactions = self.extract_data(10, pair[0], pair[1])
             except Exception as e:
                 drugs_interactions = self.drugs_interactions
-                print(f'An error occurred, skipping this drugs combination: {pair[0]} and {pair[1]}') 
-                
-
-                   
+                print(f'An error occurred, skipping this drugs combination: {pair[0]} and {pair[1]}')                  
 
         return drugs_interactions
 
