@@ -1,11 +1,8 @@
-import sys
 import os
-import re
 import art
 import pandas as pd
 from itertools import combinations
-from webdriver_manager.chrome import ChromeDriverManager
-from webdriver_manager.core.os_manager import ChromeType
+
 
 # set warnings
 #------------------------------------------------------------------------------
@@ -14,7 +11,7 @@ warnings.simplefilter(action='ignore', category = Warning)
 
 # import modules and classes
 #------------------------------------------------------------------------------
-from modules.components.scraper_classes import WebDriverToolkit, DrugComScraper
+from modules.components.scraper_assets import WebDriverToolkit, DrugComScraper
 import modules.global_variables as GlobVar
 import modules.configurations as cnf
 
@@ -23,26 +20,17 @@ import modules.configurations as cnf
 ascii_art = art.text2art('Drugs.com IC')
 print(ascii_art)
 
-# [ACTIVATE CHROMEDRIVER VERSION]
+# [LOAD AND PREPARE DATA]
 #==============================================================================
-# ...
+# Load patient dataset and dictionaries from .csv files in the dataset folder.
+# Also, create a clean version of the exploded dataset to work on
 #==============================================================================
-print('''
-Activating chromedriver. Check version for compatibility with the program
-      
-''')
 
 # activate chromedriver and scraper
 #------------------------------------------------------------------------------
 modules_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'modules')
 WD_toolkit = WebDriverToolkit(modules_path, GlobVar.data_path, headless=cnf.headless)
 webdriver = WD_toolkit.initialize_webdriver()
-
-# [LOAD AND PREPARE DATA]
-#==============================================================================
-# Load patient dataset and dictionaries from .csv files in the dataset folder.
-# Also, create a clean version of the exploded dataset to work on
-#==============================================================================
 
 # activate chromedriver
 #------------------------------------------------------------------------------
@@ -64,23 +52,16 @@ SEARCH FOR BINARY DRUGS INTERACTIONS
 -------------------------------------------------------------------------------
 Checking interactions for the following combinations (as per data source)
 ''')
-
 for combo in drug_combinations:
     print(combo)
 
-print(f'''
-Starting the scraper. This may take a while....
-''')
-
+print()
 webscraper = DrugComScraper(webdriver)
 interactions = webscraper.search_binary_interactions(drug_combinations)
 
-# create dataset
+# create dataset and save it as .csv file
 #------------------------------------------------------------------------------
 df_interactions = pd.DataFrame(interactions)
-
-# save csv files
-#------------------------------------------------------------------------------
 file_loc = os.path.join(GlobVar.data_path, 'drugs_interactions.csv')    
 df_interactions.to_csv(file_loc, index = False, sep = ';', encoding = 'utf-8')
 

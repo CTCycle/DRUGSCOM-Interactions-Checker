@@ -1,15 +1,16 @@
 import os
+import re
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
-from webdriver_manager.chrome import ChromeDriverManager
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
-import re
+from webdriver_manager.chrome import ChromeDriverManager
 
-# define the class for inspection of the input folder and generation of files list.
+
+# [WEBDRIVER]
 #==============================================================================
-#==============================================================================
+# Web driver toolkit 
 #==============================================================================
 class WebDriverToolkit:    
     
@@ -25,19 +26,27 @@ class WebDriverToolkit:
         self.chrome_prefs['profile.default_content_settings'] = {'images': 2}
         self.chrome_prefs['profile.managed_default_content_settings'] = {'images': 2}
 
-    def initialize_webdriver(self):       
+    def initialize_webdriver(self): 
+
+        '''
+        This method downloads and installs the Chrome WebDriver executable if needed, 
+        creates a WebDriver service, and initializes a Chrome WebDriver instance
+        with the specified options.
+
+        Returns:
+            driver: A Chrome WebDriver instance.
+        '''   
         self.path = ChromeDriverManager().install()
         self.service = Service(executable_path=self.path)
-        driver = webdriver.Chrome(service=self.service, options=self.option)
-        print('The latest ChromeDriver version is now installed in the .wdm folder in user/home')                  
+        driver = webdriver.Chrome(service=self.service, options=self.option)                   
         
         return driver 
    
         
     
-# define the class for inspection of the input folder and generation of files list
+# [SCRAPER]
 #==============================================================================
-#==============================================================================
+# Series of method to scrape data from drugs.com
 #==============================================================================
 class DrugComScraper: 
 
@@ -53,8 +62,19 @@ class DrugComScraper:
                                     'drug to drug interactions' : [],
                                     'drug to food interactions' : []}
         
-    #==========================================================================
+    #--------------------------------------------------------------------------
     def search_bar_access(self, time):  
+
+        '''
+        Access the search bar, clear its contents, and return the search bar element.
+
+        Keywords arguments
+            time (int): The maximum time (in seconds) to wait for the "Accept" button to appear.
+
+        Returns:
+            search_bar: The WebElement representing the search bar.
+
+        '''
         wait = WebDriverWait(self.driver, time)
         accept_button = wait.until(EC.visibility_of_element_located((By.XPATH, '//*[@id="ddc-modal"]/div/div/form/a[2]')))    
         accept_button.click()
@@ -63,8 +83,21 @@ class DrugComScraper:
 
         return search_bar
     
-    #==========================================================================
-    def inject_name(self, time, search_bar, name):  
+    #--------------------------------------------------------------------------
+    def inject_name(self, time, search_bar, name):
+
+        '''
+        Inject a name into the search bar, click the "Add" button, and clear the search bar.
+
+        Keyword Arguments:
+            time (int): The maximum time (in seconds) to wait for elements to appear.
+            search_bar: The WebElement representing the search bar.
+            name (str): The name to inject into the search bar.
+
+        Returns:
+            search_bar: The WebElement representing the cleared search bar.
+
+        '''  
         wait = WebDriverWait(self.driver, time)
         search_bar.send_keys(name)
         add_button = wait.until(EC.visibility_of_element_located((By.XPATH, '//*[@id="content"]/div/div[1]/form/div/input')))
@@ -74,8 +107,23 @@ class DrugComScraper:
         
         return search_bar
     
-    #==========================================================================
+    #--------------------------------------------------------------------------
     def extract_data(self, time, drug_A, drug_B):  
+
+        '''
+        Extract interaction data between two drugs from a webpage and store it in a dictionary.
+
+        Keyword Arguments:
+            time (int): The maximum time (in seconds) to wait for elements to appear.
+            drug_A (str): The name of the first drug.
+            drug_B (str): The name of the second drug.
+
+        Returns:
+            self.drugs_interactions: A dictionary containing interaction data, including total interactions, major interactions,
+                                     moderate interactions, minor interactions, food interactions, drug to drug interactions, and
+                                     drug to food interactions.
+
+        '''
         wait = WebDriverWait(self.driver, time)
         num_interactions = wait.until(EC.visibility_of_element_located((By.XPATH, '//*[@id="content"]/div[2]/p[1]'))).text.split()[0]
         major_interactions = wait.until(EC.visibility_of_element_located((By.XPATH, '//*[@id="filterSection"]/div[1]'))).text.split()[-1]
@@ -111,9 +159,19 @@ class DrugComScraper:
        
         return self.drugs_interactions    
 
-    #==========================================================================
+    #--------------------------------------------------------------------------
     def search_binary_interactions(self, keywords_pair):
-         
+
+        '''
+        Process drug interactions for a list of keyword pairs.
+
+        Keyword Arguments:
+            keywords_pair (list of tuples): A list of tuples, each containing two drug keywords to search for.
+
+        Returns:
+            drugs_interactions: A dictionary containing drug interaction data for each pair of drugs.
+
+        '''         
         for i, pair in enumerate(keywords_pair):
             try:
                 if i == 0:                 
