@@ -1,8 +1,6 @@
 import os
-import art
 import pandas as pd
 from itertools import combinations
-
 
 # set warnings
 #------------------------------------------------------------------------------
@@ -11,14 +9,9 @@ warnings.simplefilter(action='ignore', category = Warning)
 
 # import modules and classes
 #------------------------------------------------------------------------------
-from modules.components.scraper_assets import WebDriverToolkit, DrugComScraper
-import modules.global_variables as GlobVar
-import modules.configurations as cnf
-
-# welcome message
-#------------------------------------------------------------------------------
-ascii_art = art.text2art('Drugs.com IC')
-print(ascii_art)
+from components.scraper_assets import WebDriverToolkit, DrugComScraper
+import components.global_paths as globpt
+import configurations as cnf
 
 # [LOAD AND PREPARE DATA]
 #==============================================================================
@@ -28,13 +21,12 @@ print(ascii_art)
 
 # activate chromedriver and scraper
 #------------------------------------------------------------------------------
-modules_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'modules')
-WD_toolkit = WebDriverToolkit(modules_path, GlobVar.data_path, headless=cnf.headless)
-webdriver = WD_toolkit.initialize_webdriver()
+WDtoolkit = WebDriverToolkit(globpt.data_path, headless=cnf.headless)
+webdriver = WDtoolkit.initialize_webdriver()
 
 # activate chromedriver
 #------------------------------------------------------------------------------
-filepath = os.path.join(GlobVar.data_path, 'drugs_dataset.csv')                
+filepath = os.path.join(globpt.data_path, 'drugs_dataset.csv')                
 df_drugs = pd.read_csv(filepath, sep= ';', encoding='utf-8')
 
 # get list of drugs
@@ -53,28 +45,17 @@ SEARCH FOR BINARY DRUGS INTERACTIONS
 Checking interactions for the following combinations (as per data source)
 ''')
 for combo in drug_combinations:
-    print(combo)
+    print(f'{combo[0]} vs {combo[1]}')
 
-print()
+# perform search of binary interactions between drugs
 webscraper = DrugComScraper(webdriver)
-interactions = webscraper.search_binary_interactions(drug_combinations)
+interactions = webscraper.binary_interactions_checker(drug_combinations, cnf.waiting_time)
 
 # create dataset and save it as .csv file
 #------------------------------------------------------------------------------
 df_interactions = pd.DataFrame(interactions)
-file_loc = os.path.join(GlobVar.data_path, 'drugs_interactions.csv')    
+file_loc = os.path.join(globpt.data_path, 'drugs_interactions.csv')    
 df_interactions.to_csv(file_loc, index = False, sep = ';', encoding = 'utf-8')
-
-
-
-
-
-
-
-
-
-
-
 
 
 

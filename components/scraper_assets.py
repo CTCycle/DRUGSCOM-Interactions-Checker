@@ -14,18 +14,17 @@ from webdriver_manager.chrome import ChromeDriverManager
 #==============================================================================
 class WebDriverToolkit:    
     
-    def __init__(self, driver_path, download_path, headless=True):
-        self.driver_path = os.path.join(driver_path, 'chromedriver.exe') 
+    def __init__(self, download_path, headless=True):        
         self.download_path = download_path      
         self.option = webdriver.ChromeOptions()
         if headless==True:
-            self.option.add_argument('--headless')
-        self.service = Service(executable_path=self.driver_path)
+            self.option.add_argument('--headless')        
         self.chrome_prefs = {'download.default_directory' : download_path}
         self.option.experimental_options['prefs'] = self.chrome_prefs
         self.chrome_prefs['profile.default_content_settings'] = {'images': 2}
         self.chrome_prefs['profile.managed_default_content_settings'] = {'images': 2}
 
+    #--------------------------------------------------------------------------
     def initialize_webdriver(self): 
 
         '''
@@ -40,9 +39,8 @@ class WebDriverToolkit:
         self.service = Service(executable_path=self.path)
         driver = webdriver.Chrome(service=self.service, options=self.option)                   
         
-        return driver 
-   
-        
+        return driver
+            
     
 # [SCRAPER]
 #==============================================================================
@@ -84,7 +82,7 @@ class DrugComScraper:
         return search_bar
     
     #--------------------------------------------------------------------------
-    def inject_name(self, time, search_bar, name):
+    def inject_names_pair(self, time, search_bar, name_pair):
 
         '''
         Inject a name into the search bar, click the "Add" button, and clear the search bar.
@@ -95,17 +93,23 @@ class DrugComScraper:
             name (str): The name to inject into the search bar.
 
         Returns:
-            search_bar: The WebElement representing the cleared search bar.
-
-        '''  
+            None
+        '''
+        name_1, name_2 = name_pair        
         wait = WebDriverWait(self.driver, time)
-        search_bar.send_keys(name)
-        add_button = wait.until(EC.visibility_of_element_located((By.XPATH, '//*[@id="content"]/div/div[1]/form/div/input')))
+        search_bar.send_keys(name_1)        
+        # Ensure the 'Add' button is located correctly and wait for it to be clickable
+        # to add the first drug name
+        css_selector = "input.ddc-btn[type='submit'][value='Add']"
+        add_button = wait.until(EC.element_to_be_clickable((By.CSS_SELECTOR, css_selector)))
         add_button.click()        
         search_bar = wait.until(EC.visibility_of_element_located((By.XPATH, '//*[@id="livesearch-interaction"]')))
         search_bar.clear()
-        
-        return search_bar
+        # Ensure the 'Add' button is located correctly and wait for it to be clickable
+        # to add the second drug name
+        search_bar.send_keys(name_2)
+        add_button = wait.until(EC.element_to_be_clickable((By.CSS_SELECTOR, css_selector)))
+        add_button.click()  
     
     #--------------------------------------------------------------------------
     def extract_data(self, time, drug_A, drug_B):  
@@ -160,7 +164,7 @@ class DrugComScraper:
         return self.drugs_interactions    
 
     #--------------------------------------------------------------------------
-    def search_binary_interactions(self, keywords_pair):
+    def binary_interactions_checker(self, keywords_pair, wait_time=10):
 
         '''
         Process drug interactions for a list of keyword pairs.
@@ -175,22 +179,22 @@ class DrugComScraper:
         for i, pair in enumerate(keywords_pair):
             try:
                 if i == 0:                 
-                    wait = WebDriverWait(self.driver, 10)
+                    wait = WebDriverWait(self.driver, wait_time)
                     self.driver.get(self.IC_URL) 
-                    search_bar = self.search_bar_access(5)
+                    search_bar = self.search_bar_access(wait_time)
                 else:
-                    wait = WebDriverWait(self.driver, 10)
+                    wait = WebDriverWait(self.driver, wait_time)
                     self.driver.get(self.IC_URL) 
                     search_bar = self.driver.find_element(By.XPATH, '//*[@id="livesearch-interaction-basic"]')
                     search_bar.clear()                          
-                for K in pair:
-                    try:
-                        search_bar = self.inject_name(10, search_bar, K)                        
-                    except:
-                        print(f'Drug {K} not found! Skipping this item')
+                try:
+                    self.inject_names_pair(wait_time, search_bar, pair)                        
+                except:
+                    print(f'Cannot find info on this drugs combination: {pair}')
                 research_button = wait.until(EC.visibility_of_element_located((By.XPATH, '//*[@id="interaction_list"]/div/a[1]')))    
-                research_button.click()           
-                drugs_interactions = self.extract_data(10, pair[0], pair[1])
+                research_button.click()                  
+                drugs_interactions = self.extract_data(wait_time, pair[0], pair[1])
+                print('click')
             except Exception as e:
                 drugs_interactions = self.drugs_interactions
                 print(f'An error occurred, skipping this drugs combination: {pair[0]} and {pair[1]}')                  
