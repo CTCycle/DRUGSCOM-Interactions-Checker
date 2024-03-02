@@ -48,13 +48,13 @@ for combo in drug_combinations:
 
 # perform search of binary interactions between drugs
 webscraper = DrugComScraper(webdriver)
-interactions = webscraper.binary_interactions_checker(drug_combinations, cnf.waiting_time)
+extracted_text = webscraper.binary_interactions_checker(drug_combinations, cnf.waiting_time)
 
 # create dataset and save it as .csv file
 #------------------------------------------------------------------------------
 df_interactions = pd.DataFrame(interactions)
-file_loc = os.path.join(globpt.data_path, 'drugs_interactions.csv')    
-df_interactions.to_csv(file_loc, index = False, sep = ';', encoding = 'utf-8')
+# file_loc = os.path.join(globpt.data_path, 'drugs_interactions.csv')    
+# df_interactions.to_csv(file_loc, index = False, sep = ';', encoding = 'utf-8')
 
 
 
