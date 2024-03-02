@@ -14,11 +14,14 @@ from webdriver_manager.chrome import ChromeDriverManager
 #==============================================================================
 class WebDriverToolkit:    
     
-    def __init__(self, download_path, headless=True):        
+    def __init__(self, download_path, headless=True, ignore_SSL_errors=True):        
         self.download_path = download_path      
-        self.option = webdriver.ChromeOptions()
+        self.option = webdriver.ChromeOptions()        
         if headless==True:
-            self.option.add_argument('--headless')        
+            self.option.add_argument('--headless')
+        if ignore_SSL_errors==True: 
+            self.option.add_argument('--ignore-ssl-errors=yes')
+            self.option.add_argument('--ignore-certificate-errors')       
         self.chrome_prefs = {'download.default_directory' : download_path}
         self.option.experimental_options['prefs'] = self.chrome_prefs
         self.chrome_prefs['profile.default_content_settings'] = {'images': 2}
@@ -128,7 +131,7 @@ class DrugComScraper:
                                      drug to food interactions.
 
         '''
-        wait = WebDriverWait(self.driver, time)
+        wait = WebDriverWait(self.driver, time) 
         num_interactions = wait.until(EC.visibility_of_element_located((By.XPATH, '//*[@id="content"]/div[2]/p[1]'))).text.split()[0]
         major_interactions = wait.until(EC.visibility_of_element_located((By.XPATH, '//*[@id="filterSection"]/div[1]'))).text.split()[-1]
         moderate_interactions = wait.until(EC.visibility_of_element_located((By.XPATH, '//*[@id="filterSection"]/div[2]'))).text.split()[-1]

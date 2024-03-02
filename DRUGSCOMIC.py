@@ -15,13 +15,13 @@ import configurations as cnf
 
 # [LOAD AND PREPARE DATA]
 #==============================================================================
-# Load patient dataset and dictionaries from .csv files in the dataset folder.
-# Also, create a clean version of the exploded dataset to work on
 #==============================================================================
 
 # activate chromedriver and scraper
 #------------------------------------------------------------------------------
-WDtoolkit = WebDriverToolkit(globpt.data_path, headless=cnf.headless)
+WDtoolkit = WebDriverToolkit(globpt.data_path, 
+                             headless=cnf.headless, 
+                             ignore_SSL_errors=cnf.ignore_SSL_errors)
 webdriver = WDtoolkit.initialize_webdriver()
 
 # activate chromedriver
@@ -42,8 +42,7 @@ print(f'''
 -------------------------------------------------------------------------------
 SEARCH FOR BINARY DRUGS INTERACTIONS
 -------------------------------------------------------------------------------
-Checking interactions for the following combinations (as per data source)
-''')
+Checking interactions for the following combinations (as per data source)\n''')
 for combo in drug_combinations:
     print(f'{combo[0]} vs {combo[1]}')
 
