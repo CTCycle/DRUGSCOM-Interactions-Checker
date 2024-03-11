@@ -38,11 +38,7 @@ drug_combinations = list(combinations(unique_active_molecules, 2))
 
 # look for drugs interactions
 #------------------------------------------------------------------------------
-print(f'''
--------------------------------------------------------------------------------
-SEARCH FOR BINARY DRUGS INTERACTIONS
--------------------------------------------------------------------------------
-Checking interactions for the following combinations (as per data source)\n''')
+print('\nChecking interactions for the following combinations (as per data source)\n')
 for combo in drug_combinations:
     print(f'{combo[0]} vs {combo[1]}')
 
@@ -52,9 +48,9 @@ extracted_text = webscraper.binary_interactions_checker(drug_combinations, cnf.w
 
 # create dataset and save it as .csv file
 #------------------------------------------------------------------------------
-df_interactions = pd.DataFrame(interactions)
-# file_loc = os.path.join(globpt.data_path, 'drugs_interactions.csv')    
-# df_interactions.to_csv(file_loc, index = False, sep = ';', encoding = 'utf-8')
+df_interactions = pd.DataFrame(extracted_text)
+file_loc = os.path.join(globpt.data_path, 'drugs_interactions.csv')    
+df_interactions.to_csv(file_loc, index = False, sep = ';', encoding = 'utf-8')
 
 
 
