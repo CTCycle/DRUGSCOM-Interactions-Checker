@@ -9,8 +9,8 @@ warnings.simplefilter(action='ignore', category = Warning)
 
 # import modules and classes
 #------------------------------------------------------------------------------
-from components.scraper_assets import WebDriverToolkit, DrugComScraper
-import components.global_paths as globpt
+from utils.scraper_assets import WebDriverToolkit, DrugComScraper
+import utils.global_paths as globpt
 import configurations as cnf
 
 # [LOAD AND PREPARE DATA]
