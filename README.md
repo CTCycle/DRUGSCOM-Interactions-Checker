@@ -17,7 +17,14 @@ Run the main file DRUGSCOMIC.py to start the scraper. The drugs_dataset.csv file
 - **Moderate interactions** Number of moderate interactions
 - **Major interactions** Number of major interactions
 - **Drug to drug interactions** Description of interactions between drugs 
-- **Drug to food interactions** Description of interactions between drugs and food                    
+- **Drug to food interactions** Description of interactions between drugs and food     
+
+## License
+This project is licensed under the terms of the MIT license. See the LICENSE file for details.
+
+## Disclaimer
+...
+
 
 
 

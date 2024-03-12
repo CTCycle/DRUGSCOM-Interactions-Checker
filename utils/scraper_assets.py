@@ -103,30 +103,29 @@ class DrugComScraper:
         name_1, name_2 = name_pair        
         wait = WebDriverWait(self.driver, time)
         search_bar.send_keys(name_1) 
-        # wait for the results dropdown to appear
-        results = wait.until(EC.element_to_be_clickable((By.XPATH, '//*[@id="ls-wrap"]/div/a[1]')))     
+        # wait for the results dropdown to appear          
         # Ensure the 'Add' button is located correctly and wait for it to be clickable
-        # to add the first drug name
-        css_selector = "input.ddc-btn[type='submit'][value='Add']"
-        add_button = wait.until(EC.element_to_be_clickable((By.CSS_SELECTOR, css_selector)))       
+        # to add the first drug name        
+        add_button = wait.until(EC.element_to_be_clickable((By.XPATH, '//*[@id="content"]/div[1]/form/div/button')))       
         add_button.click()        
         search_bar = wait.until(EC.visibility_of_element_located((By.XPATH, '//*[@id="livesearch-interaction"]')))
         search_bar.clear()
         # Ensure the 'Add' button is located correctly and wait for it to be clickable
         # to add the second drug name        
         search_bar.send_keys(name_2)       
-        add_button = wait.until(EC.element_to_be_clickable((By.CSS_SELECTOR, css_selector)))        
+        add_button = wait.until(EC.element_to_be_clickable((By.XPATH, '//*[@id="content"]/div[1]/form/div/button')))
         add_button.click()
             
 
     #--------------------------------------------------------------------------
-    def extract_text_data(self, driver, drug_A, drug_B):  
+    def extract_text_data(self, driver):  
 
         html_source = driver.page_source
         soup = BeautifulSoup(html_source, 'html.parser')
         text = soup.get_text(separator='\n', strip=True)
+        sentences = text.split('\n')
 
-        return text
+        return sentences
 
     #--------------------------------------------------------------------------
     def binary_interactions_checker(self, keywords_pair, wait_time=10):
